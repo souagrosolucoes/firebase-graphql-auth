@@ -1,2 +1,2 @@
 # firebase-graphql-auth
-Servelles function to save firebase auth user information on graphql server
+Firebase function to save user auth information on graphql server
