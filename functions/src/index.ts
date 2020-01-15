@@ -5,25 +5,24 @@ admin.initializeApp(functions.config().firebase);
 import * as request from 'graphql-request';
 
 
-
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
-const client = new request.GraphQLClient(functions.config().hasura.server, {
+const client = new request.GraphQLClient(functions.config().graphql.server, {
     headers: {
         "content-type": "application/json",
-        "x-hasura-admin-secret": functions.config().hasura.secret,
+        "x-hasura-admin-secret": functions.config().graphql.secret,
     }
 });
 
-const mutation = `mutation upsertUser($id: String, $name: String!, $email: String!,) {
+const mutation = `mutation upsertUser($email: String!, $name: String!, $photoUrl: String) {
   insert_User(objects: {
-        name: $name,
         email: $email,
-        id: $id
+        name: $name,
+        photo_url: $photoUrl
     },
     on_conflict: {
-        constraint: User_pkey1,
-        update_columns: [name]}) {
+        constraint: User_email_key,
+        update_columns: [name,photo_url]}) {
             affected_rows
         }
   }`;
@@ -33,11 +32,12 @@ exports.processSignUp = functions.auth.user().onCreate(async (user: any) => {
 
     try {
         const response = await client.request(mutation, {
-            id: user.uid,
             email: user.email,
             name: user.displayName || "No Name",
+            photoUrl: user.photoURL,
         });
-        console.error("Response: " + response);
+
+        console.error("Response: " + response + "\n");
     } catch (error) {
         console.log('Error on save data to hasura engine: ', error);
         admin.auth().deleteUser(user.uid).then(function() {
