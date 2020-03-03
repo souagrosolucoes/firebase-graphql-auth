@@ -14,14 +14,14 @@ const client = new request.GraphQLClient(functions.config().graphql.server, {
     }
 });
 
-const mutation = `mutation upsertUser($email: String!, $name: String!, $photoUrl: String) {
-  insert_User(objects: {
+const mutation = `mutation upsert_user($email: String!, $name: String!, $photoUrl: String) {
+  insert_user(objects: {
         email: $email,
         name: $name,
         photo_url: $photoUrl
     },
     on_conflict: {
-        constraint: User_email_key,
+        constraint: user_email_key,
         update_columns: [name,photo_url]}) {
             affected_rows
         }
@@ -39,7 +39,7 @@ exports.processSignUp = functions.auth.user().onCreate(async (user: any) => {
 
         console.error("Response: " + response + "\n");
     } catch (error) {
-        console.log('Error on save data to hasura engine: ', error);
+        console.log('Error on save data to graphql engine: ', error);
         admin.auth().deleteUser(user.uid).then(function() {
             //TODO: return error on save data to hasura engine
             console.log('Successfully deleted user');
