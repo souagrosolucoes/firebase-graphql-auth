@@ -14,16 +14,20 @@ const client = new request.GraphQLClient(server, {
 });
 
 const mutation = `mutation upsert_user($email: String!, $name: String!) {
-  insert_user(objects: {
-        email: $email,
-        name: $name
+  insert_user(
+    objects: {
+      email: $email,
+      name: $name
     },
     on_conflict: {
-        constraint: user_email_key,
-        update_columns: [updatedAt]}) {
-            affected_rows
-        }
-  }`;
+      constraint: user_email_key,
+      update_columns: [updatedAt]
+    }
+  )
+  {
+    affected_rows
+  }
+}`;
 
 exports.processSignUp = functions.auth.user().onCreate(async (user: any) => {
   console.log("User", user.email);
@@ -49,7 +53,7 @@ exports.processSignUp = functions.auth.user().onCreate(async (user: any) => {
     "https://hasura.io/jwt/claims": {
       "x-hasura-default-role": "user",
       "x-hasura-allowed-roles": ["user"],
-      "x-hasura-user-id": user.uid
+      "x-hasura-user-id": user.uid // TODO: change this by hasura response usuer.id
     }
   };
 
